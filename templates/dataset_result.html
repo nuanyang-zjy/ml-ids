@@ -1,0 +1,82 @@
+{% extends 'base-index.html' %}
+{% load static %}
+
+{% block main_body %}
+<h1 style="color: black; font-size: 30px">数据集分析</h1><br><br>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <p class="text-muted">KDD数据测试集分析</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title" style="color: black;">攻击类型分布</h5>
+                    <p class="card-text">测试集中不同类型攻击的分布情况，包括正常流量(normal)、拒绝服务攻击(dos)、探测攻击(probe)、远程到本地攻击(r2l)和用户到根目录攻击(u2r)的占比。</p>
+                    <div id="attack_dist" style="width: 100%; height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title" style="color: black;">协议类型统计</h5>
+                    <p class="card-text">测试集中TCP、UDP和ICMP等不同网络协议的使用频率分布，帮助理解网络流量特征。</p>
+                    <div id="protocol_stats" style="width: 100%; height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title" style="color: black;">服务类型TOP10统计</h5>
+                    <p class="card-text">测试集中最常见的10种网络服务类型，反映了网络流量的服务使用特征。</p>
+                    <div id="service_top10" style="width: 100%; height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title" style="color: black;">连接时长分布</h5>
+                    <p class="card-text">网络连接时长的分布情况，帮助识别异常的连接持续时间。</p>
+                    <div id="duration_stats" style="width: 100%; height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{% static "dist/echarts.min.js" %}"></script>
+<script>
+    // 等待 DOM 完全加载后再初始化图表
+    document.addEventListener('DOMContentLoaded', function() {
+        // 初始化所有图表
+        var attack_chart = echarts.init(document.getElementById('attack_dist'));
+        var protocol_chart = echarts.init(document.getElementById('protocol_stats'));
+        var service_chart = echarts.init(document.getElementById('service_top10'));
+        var duration_chart = echarts.init(document.getElementById('duration_stats'));
+
+        // 设置图表配置
+        attack_chart.setOption({{ attack_dist|safe }});
+        protocol_chart.setOption({{ protocol_stats|safe }});
+        service_chart.setOption({{ service_top10|safe }});
+        duration_chart.setOption({{ duration_stats|safe }});
+
+        // 响应式调整
+        window.addEventListener('resize', function() {
+            attack_chart.resize();
+            protocol_chart.resize();
+            service_chart.resize();
+            duration_chart.resize();
+        });
+    });
+</script>
+{% endblock %}

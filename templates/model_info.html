@@ -1,0 +1,180 @@
+{% extends 'base-index.html' %}
+{% load static %}
+
+{% block css %}
+<link href="{% static 'main/css/model_info.css'%}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block main_body %}
+<div class="container-fluid">
+    <!-- 头部区域 -->
+    <div class="header-section">
+        <h3 class="mb-3" style="color: #2c3e50; font-size: 32px">模型概述</h3>
+        <p class="text-muted">深入了解所使用的机器学习模型及其特点</p>
+        
+        <!-- 整体统计信息 -->
+        <div class="model-stats">
+            <div class="stat-item">
+                <div class="stat-number">2</div>
+                <div class="stat-label">核心算法</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">41</div>
+                <div class="stat-label">特征维度</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">95%+</div>
+                <div class="stat-label">检测准确率</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模型卡片区域 -->
+    <div class="row">
+        <!-- 随机森林卡片 -->
+        <div class="col-md-6">
+            <div class="model-card">
+                <div class="card-header">
+                    <div class="model-icon">
+                        <i class="fas fa-tree"></i>
+                    </div>
+                    <h4>随机森林（Random Forest）</h4>
+                </div>
+                <div class="card-body">
+                    <div class="feature-section">
+                        <h5>核心特点</h5>
+                        <ul>
+                            <li>集成学习方法，结合多个决策树</li>
+                            <li>优秀的分类性能和泛化能力</li>
+                            <li>能够处理高维数据和大规模数据集</li>
+                            <li>提供特征重要性评估</li>
+                        </ul>
+                    </div>
+                    <div class="metrics-section">
+                        <div class="metric-item">
+                            <span class="metric-label">准确率</span>
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" style="width: 96%;" aria-valuenow="96" aria-valuemin="0" aria-valuemax="100">96%</div>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">召回率</span>
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" style="width: 94%;" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100">94%</div>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">F1得分</span>
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" style="width: 95%;" aria-valuenow="95" aria-valuemin="0" aria-valuemax="100">95%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- K-means卡片 -->
+        <div class="col-md-6">
+            <div class="model-card">
+                <div class="card-header">
+                    <div class="model-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <h4>K-均值聚类（K-Means）</h4>
+                </div>
+                <div class="card-body">
+                    <div class="feature-section">
+                        <h5>核心特点</h5>
+                        <ul>
+                            <li>经典的无监督学习算法</li>
+                            <li>简单高效的聚类方法</li>
+                            <li>易于实现和理解</li>
+                            <li>适用于大规模数据聚类</li>
+                        </ul>
+                    </div>
+                    <div class="metrics-section">
+                        <div class="metric-item">
+                            <span class="metric-label">轮廓系数</span>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 82%;" aria-valuenow="82" aria-valuemin="0" aria-valuemax="100">82%</div>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">簇间距离</span>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 88%;" aria-valuenow="88" aria-valuemin="0" aria-valuemax="100">88%</div>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">聚类效果</span>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 85%;" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100">85%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据集信息卡片 -->
+    <div class="dataset-section">
+        <div class="model-card">
+            <div class="card-header">
+                <div class="model-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <h4>NSL-KDD 数据集</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="dataset-stats">
+                            <div class="stat-group">
+                                <h5>数据规模</h5>
+                                <div class="stat-row">
+                                    <span>训练样本数</span>
+                                    <strong>125,973</strong>
+                                </div>
+                                <div class="stat-row">
+                                    <span>测试样本数</span>
+                                    <strong>22,544</strong>
+                                </div>
+                                <div class="stat-row">
+                                    <span>特征维度</span>
+                                    <strong>41</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="dataset-stats">
+                            <div class="stat-group">
+                                <h5>攻击类型分布</h5>
+                                <div class="stat-row">
+                                    <span>正常流量</span>
+                                    <strong>53.46%</strong>
+                                </div>
+                                <div class="stat-row">
+                                    <span>DOS攻击</span>
+                                    <strong>36.65%</strong>
+                                </div>
+                                <div class="stat-row">
+                                    <span>其他攻击</span>
+                                    <strong>9.89%</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static "dist/echarts.min.js" %}"></script>
+<script src="{% static 'main/js/model_info.js'%}"></script>
+{% endblock %}

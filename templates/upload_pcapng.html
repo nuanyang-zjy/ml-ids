@@ -1,0 +1,461 @@
+{% extends 'base-index.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'main/css/upload_pcapng.css' %}">
+{% endblock %}
+
+{% block main_body %}
+<div class="container-fluid">
+    <!-- 加载动画 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">处理中...</span>
+            </div>
+            <h5 class="mt-3">正在处理数据，请稍候...</h5>
+            <div class="progress mt-3" style="width: 200px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 上传区域 -->
+    <div class="upload-zone" id="uploadZone">
+        <form method="post" enctype="multipart/form-data" action="{% url 'upload_pcapng' %}" id="uploadForm">
+            {% csrf_token %}
+            <div class="file-input-wrapper">
+                <label for="pcapFile" class="custom-file-upload">
+                    <i class="fas fa-cloud-upload-alt"></i> 选择文件
+                </label>
+                <input id="pcapFile" type="file" name="file" accept=".pcap,.pcapng" required>
+                <div class="file-name" id="fileName">未选择文件</div>
+            </div>
+            <small class="text-muted d-block mb-3">支持上传 .pcap 和 .pcapng 格式文件</small>
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+                <i class="fas fa-upload"></i> 上传并分析
+            </button>
+            <!-- {% if data is not None %}
+                <span class="float-right text-muted">执行时间：{{ run_time }}min</span>
+            {% endif %} -->
+        </form>
+    </div>
+    
+    <!-- 统计摘要 -->
+    <div class="statistics-summary">
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">总数据包数</h6>
+                        <h3 class="card-text">{{ total_data.total_packets }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">恶意数据包数</h6>
+                        <h3 class="card-text">{{ total_data.attack_packets }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">正常数据包数</h6>
+                        <h3 class="card-text">{{ total_data.normal_packets }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">威胁检出率 %</h6>
+                        <h3 class="card-text">{{ threat_rate }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">TCP包数量</h6>
+                        <h3 class="card-text">{{ total_data.tcp_packets }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">UDP包数量</h6>
+                        <h3 class="card-text">{{ total_data.udp_packets }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">HTTP包数量</h6>
+                        <h3 class="card-text">{{ total_data.http_packets }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">平均包大小 bytes</h6>
+                        <h3 class="card-text">{{ total_data.avg_packet_size }} </h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if data %}
+    <!-- 检测结果提示 -->
+    <div class="alert alert-success text-center" role="alert">
+        <h4 class="alert-heading"><i class="fas fa-check-circle"></i> 检测完成</h4>
+        <p>经过分析，该包中存在多条可疑流量，请立即处理。</p>
+        <hr>
+        <p class="mb-0">
+            总共分析了 {{ total_data.total_packets }} 个数据包
+            <br>
+            包含 {{ total_data.http_packets }} 个HTTP包
+            <br>
+            TCP包 {{ total_data.tcp_packets }} 个
+            <br>
+            UDP包 {{ total_data.udp_packets }} 个
+        </p>
+    </div>
+
+    <!-- 数据表格 -->
+    <div class="table-container">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>源IP</th>
+                    <th>目标IP</th>
+                    <th>路径</th>
+                    <th>攻击类型</th>
+                    <th>数量</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in data %}
+                <tr>
+                    <td title="{{ item.0 }}">{{ item.0 }}</td>
+                    <td title="{{ item.1 }}">{{ item.1 }}</td>
+                    <td title="{{ item.2 }}">{{ item.2 }}</td>
+                    <td>{{ item.3 }}</td>
+                    <td>{{ item.4 }}</td>
+                    <td>
+                        <button class="btn btn-link details-btn" data-toggle="modal" data-target="#packetModal{{ forloop.counter }}">
+                            查看详情
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- 所有模态框放在表格外面 -->
+    {% for item in data %}
+    <div class="modal fade" id="packetModal{{ forloop.counter }}" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">数据包详情</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>基本信息</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th width="30%">时间戳</th>
+                                    <td>{{ item.5.timestamp }}</td>
+                                </tr>
+                                <tr>
+                                    <th>源MAC地址</th>
+                                    <td>{{ item.5.source_mac }}</td>
+                                </tr>
+                                <tr>
+                                    <th>目标MAC地址</th>
+                                    <td>{{ item.5.dest_mac }}</td>
+                                </tr>
+                                <tr>
+                                    <th>数据包长度</th>
+                                    <td>{{ item.5.length }} bytes</td>
+                                </tr>
+                                <tr>
+                                    <th>协议类型</th>
+                                    <td>{{ item.5.protocol }}</td>
+                                </tr>
+                                <tr>
+                                    <th>数据包ID</th>
+                                    <td>{{ item.5.packet_id }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>HTTP信息</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th width="30%">请求方法</th>
+                                    <td>{{ item.5.method }}</td>
+                                </tr>
+                                <tr>
+                                    <th>URL</th>
+                                    <td class="text-break">{{ item.5.url }}</td>
+                                </tr>
+                                <tr>
+                                    <th>User Agent</th>
+                                    <td class="text-break">{{ item.5.user_agent }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Referer</th>
+                                    <td class="text-break">{{ item.5.referer }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% else %}
+
+        {% if total_data.attack_packets <= 0 %}
+        <!-- 无可疑流量提示 -->
+        <div class="alert alert-success text-center mt-4" role="alert">
+            <h4 class="alert-heading"><i class="fas fa-check-circle"></i> 检测完成</h4>
+            <p>经过分析，未检测到任何可疑流量。</p>
+            <hr>
+            <p class="mb-0">
+                总共分析了 {{ total_data.total_packets }} 个数据包
+                <br>
+                包含 {{ total_data.http_packets }} 个HTTP包
+                <br>
+                TCP包 {{ total_data.tcp_packets }} 个
+                <br>
+                UDP包 {{ total_data.udp_packets }} 个
+            </p>
+        </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block js %}
+<!-- <script type="text/javascript" src="{% static 'main/css/echarts.min.js' %}"></script> -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 获取元素
+    const fileInput = document.getElementById('pcapFile');
+    const fileName = document.getElementById('fileName');
+    const submitBtn = document.getElementById('submitBtn');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const progressBar = document.querySelector('.progress-bar');
+    const uploadForm = document.getElementById('uploadForm');
+    
+    // 文件选择处理
+    fileInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const size = (file.size / (1024 * 1024)).toFixed(2);
+            fileName.innerHTML = `
+                <div class="selected-file-info">
+                    <i class="fas fa-file"></i>
+                    <span class="file-name">${file.name}</span>
+                    <span class="file-size">(${size} MB)</span>
+                    <button type="button" class="btn-remove-file" aria-label="Remove file">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+
+            // 为新创建的删除按钮添加事件监听
+            const removeBtn = fileName.querySelector('.btn-remove-file');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    fileInput.value = '';
+                    fileName.textContent = '未选择文件';
+                });
+            }
+        } else {
+            fileName.textContent = '未选择文件';
+        }
+    });
+
+    // 表单提交处理
+    uploadForm.addEventListener('submit', function(e) {
+        const file = fileInput.files[0];
+        
+        if (!file) {
+            alert('请选择一个文件进行上传！');
+            e.preventDefault();
+            return;
+        }
+        
+        // 文件大小验证
+        if (file.size > 200 * 1024 * 1024) {
+            alert('文件大小不能超过200MB！');
+            e.preventDefault();
+            return;
+        }
+        
+        // 文件类型验证
+        const validTypes = ['.pcap', '.pcapng'];
+        const fileNameLower = file.name.toLowerCase();
+        const isValidType = validTypes.some(type => fileNameLower.endsWith(type));
+        
+        if (!isValidType) {
+            alert('请上传.pcap或.pcapng格式的文件！');
+            e.preventDefault();
+            return;
+        }
+
+        // 显示加载动画
+        loadingOverlay.style.display = 'block';
+        submitBtn.disabled = true;
+
+        // 进度条动画
+        let progress = 0;
+        const progressInterval = setInterval(function() {
+            progress += 1;
+            if (progress <= 90) {
+                progressBar.style.width = progress + '%';
+            } else {
+                clearInterval(progressInterval);
+            }
+        }, 200);
+
+        // 添加超时处理
+        setTimeout(function() {
+            if (loadingOverlay.style.display === 'block') {
+                progressBar.style.width = '90%';
+            }
+        }, 30000);
+    });
+
+    // 拖放文件处理
+    const uploadZone = document.getElementById('uploadZone');
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    uploadZone.addEventListener('dragenter', function() {
+        this.classList.add('dragover');
+    });
+
+    uploadZone.addEventListener('dragleave', function() {
+        this.classList.remove('dragover');
+    });
+
+    uploadZone.addEventListener('drop', function(e) {
+        this.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length) {
+            fileInput.files = files;
+            // 触发change事件
+            const event = new Event('change');
+            fileInput.dispatchEvent(event);
+        }
+    });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const attackTypeFilter = document.getElementById('attackTypeFilter');
+    const tableRows = document.querySelectorAll('table tbody tr');
+
+    // 搜索和筛选函数
+    function filterTable() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedAttackType = attackTypeFilter.value;
+
+        tableRows.forEach(row => {
+            const sourceIP = row.cells[0].textContent.toLowerCase();
+            const destIP = row.cells[1].textContent.toLowerCase();
+            const url = row.cells[2].textContent.toLowerCase();
+            const attackType = row.cells[3].textContent;
+
+            const matchesSearch = sourceIP.includes(searchTerm) || 
+                                destIP.includes(searchTerm) || 
+                                url.includes(searchTerm);
+
+            const matchesFilter = !selectedAttackType || attackType === selectedAttackType;
+
+            row.style.display = (matchesSearch && matchesFilter) ? '' : 'none';
+        });
+    }
+
+    // 添加事件监听器
+    searchInput.addEventListener('input', filterTable);
+    attackTypeFilter.addEventListener('change', filterTable);
+
+    // 添加回车键搜索支持
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            filterTable();
+        }
+    });
+});
+</script>
+
+<!-- 添加相关的 CSS -->
+<style>
+.filter-section {
+    background: white;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.input-group .btn-outline-secondary {
+    border-color: #ced4da;
+}
+
+.input-group .btn-outline-secondary:hover {
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+}
+
+select.form-control {
+    cursor: pointer;
+}
+
+/* 添加搜索结果高亮样式 */
+.highlight {
+    background-color: yellow;
+    padding: 2px;
+}
+
+/* 优化表格响应式布局 */
+@media (max-width: 768px) {
+    .filter-section .row > div {
+        margin-bottom: 10px;
+    }
+}
+</style>
+{% endblock %}

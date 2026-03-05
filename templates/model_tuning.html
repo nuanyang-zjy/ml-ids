@@ -1,0 +1,72 @@
+{% extends 'base-index.html' %}
+{% load static %}
+
+{% block css %}
+<link href="{% static 'main/css/model_tuning.css'%}" rel="stylesheet">
+{% endblock %}
+
+{% block main_body %}
+<div class="container-fluid">
+    <!-- 头部区域 -->
+    <div class="header-section">
+        <h3 class="mb-3" style="color: #2c3e50; font-size: 32px">模型调优</h3>
+        <p class="text-muted">选择基础模型进行参数调优，提升模型性能</p>
+    </div>
+
+    <!-- 模型卡片区域 -->
+    <div class="row justify-content-center">
+        <!-- 随机森林卡片 -->
+        <div class="col-md-5">
+            <div class="model-card">
+                <div class="card-body">
+                    <div class="model-icon">
+                        <i class="fas fa-tree"></i>
+                    </div>
+                    <h4 class="model-title">随机森林算法</h4>
+                    <p class="model-description">
+                        通过构建多个决策树进行预测，集成学习方法提高模型准确性和鲁棒性。
+                        适用于高维数据，能有效处理特征间的相互作用。
+                    </p>
+                    <div class="mb-3">
+                        <span class="badge bg-primary">高准确率</span>
+                        <span class="badge bg-success">抗过拟合</span>
+                        <span class="badge bg-info">特征重要性</span>
+                    </div>
+                    <a href="{% url 'tuning_random_forest' %}" class="btn btn-primary tune-btn">
+                        开始调优 <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- KNN卡片 -->
+        <div class="col-md-5">
+            <div class="model-card">
+                <div class="card-body">
+                    <div class="model-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <h4 class="model-title">KNN算法</h4>
+                    <p class="model-description">
+                        基于近邻关系的分类算法，通过测量特征空间中的距离进行预测。
+                        简单直观，无需训练过程，适合小规模数据集。
+                    </p>
+                    <div class="mb-3">
+                        <span class="badge bg-warning">无参数</span>
+                        <span class="badge bg-success">直观简单</span>
+                        <span class="badge bg-info">实时预测</span>
+                    </div>
+                    <a href="{% url 'tuning_knn' %}" class="btn btn-primary tune-btn">
+                        开始调优 <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="https://kit.fontawesome.com/your-code.js" crossorigin="anonymous"></script>
+<script src="{% static 'main/js/model_tuning.js'%}"></script>
+{% endblock %}

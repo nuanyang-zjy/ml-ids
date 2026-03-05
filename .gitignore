@@ -1,0 +1,71 @@
+### Django 核心 ###
+# Django 日志文件
+*.log
+# Django 翻译文件
+*.pot
+# Python 编译文件
+*.pyc
+# 本地配置文件（不共享）
+local_settings.py
+# Django SQLite 数据库文件（绝对忽略）
+*.sqlite3
+*.sqlite3-journal
+# Django collectstatic 生成的静态文件目录
+staticfiles/
+# 用户上传文件目录
+media/
+
+# IDE 配置（个性化，不共享）
+.idea/
+.vscode/
+
+# Python 虚拟环境（核心，必须忽略）
+.venv/
+venv/
+env/
+ENV/
+# 环境变量文件（敏感信息，不共享）
+*.env
+
+# 临时文件目录
+static/tmp/
+tmp/
+temp/
+
+# 运行生成的结果/模型文件
+static/results/
+static/tuning_model/
+
+# Python 序列化/临时结果文件
+*.pkl
+*.pickle
+
+# Python 编译/打包产物（Python 项目必加）
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 通用系统/临时文件
+*.tmp
+*.temp
+# Mac 系统隐藏文件
+.DS_Store
+# Windows 系统隐藏文件
+Thumbs.db

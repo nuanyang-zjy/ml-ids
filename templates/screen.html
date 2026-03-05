@@ -1,0 +1,44 @@
+{% extends 'base-index.html' %}
+{% load static %}
+
+{% block css %}
+    <link href="{% static "main/css/screen.css"%}" rel="stylesheet" type="text/css">
+{% endblock %}
+{% block main_body %}
+    <h1 style="color: black; font-size: 30px">模型预览</h1><br><br>
+    <div class="container-fluid">
+        <!-- 动态展示 -->
+        <div class="row">
+            <div class="col-12">
+                <h3>模型预览</h3>
+                <p class="text-muted">展示不同模型在对同一个数据集进行预测时的数据差异</p>
+            </div>
+        </div>
+
+        <!-- 图1 -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-5 shadow-sm">
+                    <div style="text-align: center; margin-top: 15px; ">{{ bar_chart|safe }}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-5 shadow-sm">
+                    <div style="text-align: center; margin-top: 15px; ">{{ radar_chart|safe }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 图3 -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card mb-4 shadow-sm">
+                    <div style="text-align: center;margin-top: 15px; ">{{ bar_3d|safe }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block js %}
+    <script src="{% static "main/js/screen.js"%}"> </script>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends 'base-index.html' %}
+{% load static %}
+
+{% block css %}
+<link href="{% static 'main/css/random_forest_tuning.css'%}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block main_body %}
+<div class="container-fluid">
+    <!-- 头部区域 -->
+    <div class="header-section">
+        <h3>随机森林算法调优</h3>
+    </div>
+
+    <!-- 参数调整区域 -->
+    <div class="parameter-section">
+        <div class="parameter-header">
+            <h4 class="parameter-title">参数配置</h4>
+            <a href="{% url 'reset_parameter_random_forest' %}" class="reset-button">
+                重置参数 <i class="fas fa-redo"></i>
+            </a>
+        </div>
+
+        <form role="form" method="post" id="tuningForm" action="{% url 'tuning_random_forest' %}">
+            {% csrf_token %}
+            <div class="parameter-group">
+                <div class="parameter-row">
+                    <label class="parameter-label" title="n_estimators参数控制随机森林中的决策树数量。">
+                        n_estimators
+                        <i class="fas fa-info-circle"></i>
+                    </label>
+                    <div class="range-container">
+                        <input name="n_estimators" type="range" class="form-range" min="50" max="200" 
+                            id="customRange1" 
+                            value="{% if n_estimators %}{{ n_estimators }}{% else %}125{% endif %}" 
+                            oninput="updateValue(this.value, 'customRangeValue1')">
+                        <span id="customRangeValue1" class="range-value">{% if n_estimators %}{{ n_estimators }}{% else %}125{% endif %}</span>
+                    </div>
+                    <div class="parameter-info">控制随机森林中决策树的数量，较大的值通常能提供更好的性能</div>
+                </div>
+
+                <div class="parameter-row">
+                    <label class="parameter-label" title="限制深度可以防止过拟合，但如果设置得太小可能会导致欠拟合">
+                        max_depth
+                        <i class="fas fa-info-circle"></i>
+                    </label>
+                    <div class="range-container">
+                        <input name="max_depth" type="range" class="form-range" min="1" max="50" 
+                            id="customRange2" 
+                            value="{% if max_depth %}{{ max_depth }}{% else %}10{% endif %}" 
+                            oninput="updateValue(this.value, 'customRangeValue2')">
+                        <span id="customRangeValue2" class="range-value">{% if max_depth %}{{ max_depth }}{% else %}10{% endif %}</span>
+                    </div>
+                    <div class="parameter-info">决策树的最大深度，用于控制模型复杂度</div>
+                </div>
+
+                <div class="parameter-row">
+                    <label class="parameter-label" title="随机数种子，用于保证结果的可重复性">
+                        random_state
+                        <i class="fas fa-info-circle"></i>
+                    </label>
+                    <div class="range-container">
+                        <input name="random_state" type="range" class="form-range" min="1" max="10" 
+                            id="customRange3" 
+                            value="{% if random_state %}{{ random_state }}{% else %}1{% endif %}" 
+                            oninput="updateValue(this.value, 'customRangeValue3')">
+                        <span id="customRangeValue3" class="range-value">{% if random_state %}{{ random_state }}{% else %}1{% endif %}</span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="parameter-row">
+                            <label class="parameter-label" title="衡量分裂质量的标准">
+                                criterion
+                                <i class="fas fa-info-circle"></i>
+                            </label>
+                            <input value="{% if criterion %}{{ criterion }}{% else %}gini{% endif %}" 
+                                   type="text" class="form-control" name="criterion">
+                            <div class="parameter-info">可选值: 'gini'（基尼不纯度）或 'entropy'（信息熵）</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="parameter-row">
+                            <label class="parameter-label" title="特征选择方式">
+                                max_features
+                                <i class="fas fa-info-circle"></i>
+                            </label>
+                            <input value="{% if max_features %}{{ max_features }}{% else %}sqrt{% endif %}" 
+                                   type="text" class="form-control" name="max_features">
+                            <div class="parameter-info">'sqrt' 表示取特征总数的平方根</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 性能指标区域 -->
+            <div class="metrics-section">
+                <h5 class="mb-4">模型性能指标</h5>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">准确率</div>
+                        <div class="progress">
+                            <div id="accuracy" class="progress-bar" style="width: {{ accuracy }}%">{{ accuracy }}%</div>
+                        </div>
+                        <i id="i-accuracy-down" class="fas fa-long-arrow-alt-down trend-indicator text-danger" style="display: none"></i>
+                        <i id="i-accuracy-up" class="fas fa-long-arrow-alt-up trend-indicator text-success" style="display: none"></i>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">精确率</div>
+                        <div class="progress">
+                            <div id="precision" class="progress-bar bg-success" style="width: {{ precision }}%">{{ precision }}%</div>
+                        </div>
+                        <i id="i-precision-down" class="fas fa-long-arrow-alt-down trend-indicator text-danger" style="display: none"></i>
+                        <i id="i-precision-up" class="fas fa-long-arrow-alt-up trend-indicator text-success" style="display: none"></i>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">召回率</div>
+                        <div class="progress">
+                            <div id="recall" class="progress-bar bg-info" style="width: {{ recall }}%">{{ recall }}%</div>
+                        </div>
+                        <i id="i-recall-down" class="fas fa-long-arrow-alt-down trend-indicator text-danger" style="display: none"></i>
+                        <i id="i-recall-up" class="fas fa-long-arrow-alt-up trend-indicator text-success" style="display: none"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button type="button" id="submitButton" class="btn btn-success train-button">
+                    确认并开始训练
+                </button>
+                <div class="spinner-border text-primary" style="display: none" role="status" id="loading">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'main/js/random_forest_tuning.js'%}"></script>
+{% endblock %}

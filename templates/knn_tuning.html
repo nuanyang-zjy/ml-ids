@@ -1,0 +1,120 @@
+{% extends 'base-index.html' %}
+{% load static %}
+
+{% block css %}
+<link href="{% static 'main/css/random_forest_tuning.css'%}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block main_body %}
+<div class="container-fluid">
+    <div class="header-section">
+        <h3>K近邻算法调优</h3>
+    </div>
+
+    <div class="parameter-section">
+        <div class="parameter-header">
+            <h4 class="parameter-title">参数配置</h4>
+            <a href="{% url 'reset_parameter_knn_model' %}" class="reset-button">
+                <i class="fas fa-redo"></i> 重置参数
+            </a>
+        </div>
+
+        <form role="form" method="post" id="tuningForm" action="{% url 'tuning_knn' %}">
+            {% csrf_token %}
+            <div class="parameter-group">
+                <div class="parameter-row">
+                    <label class="parameter-label" title="n_neighbors参数控制K近邻算法中的邻居数量">
+                        邻居数量 (n_neighbors)
+                        <i class="fas fa-info-circle"></i>
+                    </label>
+                    <div class="range-container">
+                        <input name="n_neighbors" type="range" class="form-range" min="1" max="50" 
+                            id="customRange1" 
+                            value="{% if n_neighbors %}{{ n_neighbors }}{% else %}5{% endif %}" 
+                            oninput="updateValue(this.value, 'customRangeValue1')">
+                        <span id="customRangeValue1" class="range-value">{% if n_neighbors %}{{ n_neighbors }}{% else %}5{% endif %}</span>
+                    </div>
+                    <div>控制分类时考虑的邻居数量，较大的值可能会导致过度平滑</div>
+                </div>
+
+                <div class="parameter-row">
+                    <label class="parameter-label" title="p参数决定距离度量方式">
+                        距离度量 (p_measure)
+                        <i class="fas fa-info-circle"></i>
+                    </label>
+                    <div class="range-container">
+                        <input name="p_measure" type="range" class="form-range" min="1" max="10" 
+                            id="customRange2" 
+                            value="{% if p_measure %}{{ p_measure }}{% else %}2{% endif %}" 
+                            oninput="updateValue(this.value, 'customRangeValue2')">
+                        <span id="customRangeValue2" class="range-value">{% if p_measure %}{{ p_measure }}{% else %}2{% endif %}</span>
+                    </div>
+                    <div>距离度量参数：1表示曼哈顿距离，2表示欧几里得距离</div>
+                </div>
+
+                <div class="parameter-row">
+                    <label class="parameter-label" title="权重计算方式">
+                        权重方式 (weights)
+                        <i class="fas fa-info-circle"></i>
+                    </label>
+                    <div class="select-container">
+                        <select name="weights" class="form-select custom-select">
+                            <option value="uniform" {% if weights == 'uniform' or not weights %}selected{% endif %}>均匀权重 (uniform)</option>
+                            <option value="distance" {% if weights == 'distance' %}selected{% endif %}>距离权重 (distance)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <span class="fw-medium">均匀权重 (uniform)：</span>所有邻居的权重相等<br>
+                        <span class="fw-medium">距离权重 (distance)：</span>权重与距离成反比，较近的邻居具有更大的影响力
+                    </div>
+                </div>
+            </div>
+
+            <div class="metrics-section">
+                <h5>模型性能指标</h5>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">准确率</div>
+                        <div class="progress">
+                            <div id="accuracy" class="progress-bar" style="width: {{ accuracy|default:0 }}%">{{ accuracy|default:0 }}%</div>
+                        </div>
+                        <i id="i-accuracy-down" class="fas fa-long-arrow-alt-down trend-indicator text-danger" style="display: none"></i>
+                        <i id="i-accuracy-up" class="fas fa-long-arrow-alt-up trend-indicator text-success" style="display: none"></i>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">精确率</div>
+                        <div class="progress">
+                            <div id="precision" class="progress-bar bg-success" style="width: {{ precision|default:0 }}%">{{ precision|default:0 }}%</div>
+                        </div>
+                        <i id="i-precision-down" class="fas fa-long-arrow-alt-down trend-indicator text-danger" style="display: none"></i>
+                        <i id="i-precision-up" class="fas fa-long-arrow-alt-up trend-indicator text-success" style="display: none"></i>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">召回率</div>
+                        <div class="progress">
+                            <div id="recall" class="progress-bar bg-info" style="width: {{ recall|default:0 }}%">{{ recall|default:0 }}%</div>
+                        </div>
+                        <i id="i-recall-down" class="fas fa-long-arrow-alt-down trend-indicator text-danger" style="display: none"></i>
+                        <i id="i-recall-up" class="fas fa-long-arrow-alt-up trend-indicator text-success" style="display: none"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button type="button" id="submitButton" class="btn btn-success train-button">
+                    确认并开始训练
+                </button>
+                <div id="loadingSpinner" class="spinner-border text-primary" style="display: none" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'main/js/knn_tuning.js' %}"></script>
+{% endblock %}

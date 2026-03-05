@@ -1,0 +1,273 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Login</title>
+
+    <!-- Custom fonts for this template-->
+    <link href="{% static "myadmin/vendor/fontawesome-free/css/all.min.css"%}" rel="stylesheet" type="text/css">
+    <!-- Custom styles for this template-->
+    <link href="{% static "myadmin/css/sb-admin-2.min.css"%}" rel="stylesheet">
+    <style>
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        }
+        
+        .captcha-container {
+            margin-bottom: 1rem;
+        }
+        
+        .captcha-container img {
+            height: 32px;
+            border-radius: 4px;
+        }
+        
+        .captcha-container input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #d1d3e2;
+            border-radius: 25px;
+            font-size: 16px;
+        }
+        
+        .refresh-captcha {
+            color: #4e73df;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .refresh-captcha:hover {
+            color: #224abe;
+            transform: rotate(180deg);
+        }
+        
+        .error-message {
+            padding: 10px;
+            margin-top: 1rem;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+        
+        .error-message.show {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        .error-message.error {
+            background-color: #ffe6e6;
+            color: #dc3545;
+        }
+        
+        .error-message.info {
+            background-color: #e6f3ff;
+            color: #0066cc;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast-notification {
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-bottom: 10px;
+            opacity: 0;
+            transform: translateX(100%);
+            animation: slideIn 0.3s ease forwards;
+            max-width: 300px;
+        }
+
+        .toast-notification.error {
+            border-left: 4px solid #dc3545;
+        }
+
+        .toast-message {
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .toast-message i {
+            margin-right: 8px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-primary">
+
+    <div class="toast-container"></div>
+
+    <div class="container">
+
+        <!-- Outer Row -->
+        <div class="row justify-content-center">
+
+            <div class="col-xl-14 col-lg-12 col-md-12">
+
+                <div style="opacity: 0.95" class="card o-hidden border-0 shadow-lg my-5">
+                    <div class="card-body p-0">
+                        <!-- Nested Row within Card Body -->
+                        <div class="row">
+                            <div class="col-lg-6 d-none d-lg-block"><img src="{% static 'myadmin/img/login-div.png' %}" style="height: 500px" alt="Login Image"/></div>
+                            <div class="col-lg-6">
+                                <div class="p-5">
+                                    <div class="text-center">
+                                        <h1 class="h5 text-gray-900 mb-4"><span class="h3 text-gray-900 mb-4" style="color: black">机器学习入侵检测系统</span> 欢迎访问</h1>
+                                    </div>
+                                     <form action="{% url 'myadmin_dologin' %}" method="post" class="user" id="loginForm">
+                                        {% csrf_token %}
+                                        <div class="form-group">
+                                            <input  class="form-control form-control-user"
+                                                name="username"
+                                                placeholder="账号" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="password" name="pass" class="form-control form-control-user"
+                                                id="exampleInputPassword" placeholder="密码" required>
+                                        </div>
+                                        <div class="form-group captcha-container">
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                {{ captcha_form.captcha }}
+                                                <a href="javascript:void(0);" 
+                                                   onclick="refreshPage();" 
+                                                   class="refresh-captcha" 
+                                                   title="点击刷新验证码">
+                                                    <i class="fas fa-sync-alt"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-primary btn-user btn-block">
+                                            登录
+                                        </button>
+                                    </form>
+                                    <hr>
+
+                                    <div class="text-center">
+                                        <a class="small" href="{% url 'myadmin_register' %}">创建账户</a>
+                                    </div>
+                                    <div class="text-center">
+                                        <a class="small" href="{% url 'forgot_pd' %}">忘记密码?</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="{% static "myadmin/vendor/jquery/jquery.min.js"%}></script>
+    <script src="{% static "myadmin/vendor/bootstrap/js/bootstrap.bundle.min.js"%}></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="{% static "myadmin/vendor/jquery-easing/jquery.easing.min.js"%}></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="{% static "myadmin/js/sb-admin-2.min.js"%}></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 验证码输入框样式
+        var captchaInput = document.getElementById("id_captcha_1");
+        captchaInput.classList.add('captcha-input');
+        captchaInput.setAttribute('placeholder', '验证码');
+        
+        // 如果有消息，显示在右上角
+        {% if messages %}
+            {% for message in messages %}
+                showToast("{{ message }}", "{{ message.tags }}");
+            {% endfor %}
+        {% endif %}
+        
+        // 表单提交验证
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const username = this.querySelector('input[name="username"]').value;
+            const password = this.querySelector('input[name="pass"]').value;
+            const captcha = this.querySelector('input[name="captcha_1"]').value;
+            
+            if (!username || !password || !captcha) {
+                e.preventDefault();
+                showToast('请填写所有必填字段', 'error');
+            }
+        });
+    });
+
+    function showToast(message, type = 'error') {
+        const container = document.querySelector('.toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast-notification ${type}`;
+        toast.innerHTML = `
+            <div class="toast-message">
+                <i class="fas fa-${type === 'success' ? 'check' : 'exclamation'}-circle"></i>
+                ${message}
+            </div>
+        `;
+        
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.classList.add('fade-out');
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }, 3000);
+    }
+
+    function refreshPage() {
+        // 清除所有现有的消息
+        document.querySelector('.toast-container').innerHTML = '';
+        // 刷新页面
+        window.location.reload();
+    }
+    </script>
+</body>
+</html>
